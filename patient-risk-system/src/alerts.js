@@ -6,12 +6,22 @@ function generateAlerts(patients, calculateTotalRisk, hasInvalidData) {
   for (const p of patients) {
     const risk = calculateTotalRisk(p);
 
-    if (risk >= 4) highRisk.push(p.patient_id);
     const temp = parseFloat(p.temperature);
+
+    // 1. High risk
+    if (risk >= 4) {
+      highRisk.push(p.patient_id);
+    }
+
+    // 2. Fever (independent)
     if (!isNaN(temp) && temp >= 99.6) {
       fever.push(p.patient_id);
     }
-    if (hasInvalidData(p)) dataIssues.push(p.patient_id);
+
+    // 3. Data quality
+    if (hasInvalidData(p)) {
+      dataIssues.push(p.patient_id);
+    }
   }
 
   return {

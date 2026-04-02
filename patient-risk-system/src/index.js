@@ -26,9 +26,20 @@ async function main() {
 
   console.log("Submitting:", alerts);
 
-  const result = await submitResults(alerts);
+  //   const result = await submitResults(alerts);
 
-  console.log("Result:", result);
+  //   console.log("Result:", result);
+
+  console.log("\n===== FINAL OUTPUT =====");
+
+  console.log("High Risk:", alerts.high_risk_patients.length);
+  console.log(alerts.high_risk_patients);
+
+  console.log("\nFever:", alerts.fever_patients.length);
+  console.log(alerts.fever_patients);
+
+  console.log("\nData Issues:", alerts.data_quality_issues.length);
+  console.log(alerts.data_quality_issues);
 }
 
 main();
