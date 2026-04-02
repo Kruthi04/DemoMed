@@ -10,44 +10,39 @@ const client = axios.create({
   },
 });
 
-function isValidPatientsPayload(body) {
-  return (
-    body &&
-    Array.isArray(body.data) &&
-    body.pagination &&
-    typeof body.pagination.hasNext === "boolean"
-  );
-}
-
-async function fetchPatients(page = 1, attempt = 1) {
-  const maxShapeAttempts = 5;
+async function fetchPatients(page = 1, retries = 5) {
   try {
     const res = await client.get(`/patients?page=${page}&limit=5`);
-    if (isValidPatientsPayload(res.data)) {
-      return res.data;
+
+    if (!res.data || !Array.isArray(res.data.data)) {
+      throw new Error("Invalid response shape");
     }
-    if (attempt >= maxShapeAttempts) {
-      throw new Error(
-        `Invalid /patients response on page ${page} after ${maxShapeAttempts} attempts`,
-      );
-    }
-    await new Promise((r) => setTimeout(r, 300 * attempt));
-    return fetchPatients(page, attempt + 1);
+
+    return res.data;
   } catch (err) {
-    if (err.response && err.response.status === 429) {
+    if (retries <= 0) throw err;
+
+    const status = err.response?.status;
+
+    if (status === 429) {
+      const wait = err.response?.data?.retry_after || 2;
+      console.log(`⏳ Rate limited... waiting ${wait}s`);
+      await new Promise((r) => setTimeout(r, wait * 1000));
+      return fetchPatients(page, retries - 1);
+    }
+
+    if ([500, 502, 503].includes(status)) {
       await new Promise((r) => setTimeout(r, 1000));
-      return fetchPatients(page);
+      return fetchPatients(page, retries - 1);
     }
-    if (err.response && [500, 502, 503].includes(err.response.status)) {
-      return fetchPatients(page);
-    }
-    throw err;
+
+    await new Promise((r) => setTimeout(r, 500));
+    return fetchPatients(page, retries - 1);
   }
 }
 
 async function submitResults(payload) {
-  const res = await client.post("/submit-assessment", payload);
-  return res.data;
+  return client.post("/submit-assessment", payload);
 }
 
 module.exports = { fetchPatients, submitResults };

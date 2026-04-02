@@ -1,4 +1,4 @@
-const { fetchPatients, submitResults } = require("./api");
+const { fetchPatients } = require("./api");
 const { calculateTotalRisk } = require("./risk");
 const { hasInvalidData } = require("./processor");
 const { generateAlerts } = require("./alerts");
@@ -14,6 +14,8 @@ async function main() {
     allPatients = [...allPatients, ...data.data];
     hasNext = data.pagination.hasNext;
     page++;
+
+    await new Promise((r) => setTimeout(r, 300));
   }
 
   console.log("Total patients:", allPatients.length);
@@ -24,15 +26,9 @@ async function main() {
     hasInvalidData,
   );
 
-  console.log("Submitting:", alerts);
-
-  //   const result = await submitResults(alerts);
-
-  //   console.log("Result:", result);
-
   console.log("\n===== FINAL OUTPUT =====");
 
-  console.log("High Risk:", alerts.high_risk_patients.length);
+  console.log("\nHigh Risk:", alerts.high_risk_patients.length);
   console.log(alerts.high_risk_patients);
 
   console.log("\nFever:", alerts.fever_patients.length);
