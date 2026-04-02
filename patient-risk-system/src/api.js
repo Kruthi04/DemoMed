@@ -1,7 +1,8 @@
+require("dotenv").config();
 const axios = require("axios");
 
-const API_KEY = "ak_683ccc19786f062f467e7f34f00c13261b5ecfed06f08b3b";
-const BASE_URL = "https://assessment.ksensetech.com/api";
+const API_KEY = process.env.API_KEY;
+const BASE_URL = process.env.BASE_URL;
 
 const client = axios.create({
   baseURL: BASE_URL,
